@@ -16,13 +16,15 @@ exports.login = async function (req,res){
        let password =req.body.password;
        console.log("password : ", password);
 
+       
+
        if(!email) {
-        response = error_function({
-            statuscode : 400,
-            message : "Email is Required"
+        let response = error_function({
+            statusCode : 400,
+            message : "email is Required"
         });
         res.status(response.statusCode).send(response);
-        return ;
+        return;
        }
        if (!password) {
         let response = error_function({
