@@ -5,10 +5,11 @@ module.exports = {
   up: (models, mongoose) => {
     return models.users
     .insertMany ([{
-      _id : "65dd74c80697c4fa67d003dd",
+      _id : "65e557b0e06e940dfa023fa2",
 
       
-        name : "mark",
+        first_name : "mark",
+        last_name : "antony",
         email : 'mark@gmail.com',
         password : "$2a$12$0gY8ytInp36Mef90KKKnpOWNhT789TunW/bMwayE2fSUvLod3/7v6",
 
@@ -27,7 +28,7 @@ module.exports = {
     .deleteMany({
       _id : {
         $in : [
-          "65dd74c80697c4fa67d003dd",
+          "65e557b0e06e940dfa023fa2",
          
 
         ]
