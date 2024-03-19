@@ -98,6 +98,7 @@ async function createUser (req,res) {
 async function getUserData(req,res){
     try {
         let allUsers = await users.find({});
+        
 
         if (allUsers.length > 0) {
             let response = success_function({
