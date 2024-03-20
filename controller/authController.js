@@ -187,3 +187,103 @@ exports.forgotPasswordController = async function (req,res) {
     }
 }
 };
+
+exports.passwordResetController = async function (req,res){
+    try { 
+        const authHeader = req.headers["authorization"] ;
+        const token = authHeader.split(" ")[1] ; 
+        // console.log("token : ",token);
+
+
+        let new_password = req.body.newPassword ; 
+        let confirm_password = req.body.confirmPassword ;
+
+        console.log("new_password : ",new_password)
+
+        if (new_password !== confirm_password) {
+            const response = error_function({
+                statusCode: 400,
+                message: "New password and confirm password do not match"
+            });
+            res.status(response.statusCode).send(response);
+            return;
+        }
+
+
+        let decoded = jwt.decode(token);
+        console.log("decoded :", decoded);
+
+        let user = await users.findOne({
+            $and : [{_id : decoded.user_id},{password_token : token}] 
+
+        });
+        console.log("user : ",user);
+
+        
+
+        if(user) {
+            let salt = bcrypt.genSaltSync(10);
+            let password_hash = bcrypt.hashSync(new_password,salt);
+
+            let data = await users.updateOne (
+                {_id : decoded.user_id} , 
+                {$set : {password : password_hash , password_token : null}},
+                
+            );
+
+            if (data.matchedCount===1 && data.modifiedCount==1) { 
+                let response = success_function ({
+                    statusCode : 200,
+                    message : "Password changed Successfully"
+                })
+                res.status(response.statusCode).send(response);
+                return ;
+            }else if(matchedCount == 0) {
+                let response =error_function({
+                    statusCode : 404,
+                    message : "User not Found..."
+                })
+                res.status(response.statusCode).send(response);
+                return ;
+            }else{
+                let response = error_function({
+                    statusCode : 400,
+                    message : "Password reset failed"
+                })
+                res.status(response.statusCode).send(response);
+                return ;
+            }
+
+        }else { 
+            let response = error_function ({
+                statusCode : 403 ,
+                message : "Forbidden"
+            });
+            res.status(response.statusCode).send(response);
+            return ;
+        }
+
+    }catch(error){
+
+        if(process.env.NODE_ENV == "production") {
+            let response = error_function ({
+                statusCode : 400 ,
+                message : error
+                ?error.message
+                ?error.message
+                :error
+                : "Something went wrong..."
+            })
+            res.status(response.statusCode).send(response);
+            return ; 
+        }else {
+            let response = error_function ({
+                statusCode : 400 ,
+                message : error
+            })
+            res.status(response.statusCode).send(response);
+            return ;
+        }
+
+    }
+}
