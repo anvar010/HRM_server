@@ -4,6 +4,8 @@ const success_function = require('../utils/response-handler').success_function ;
 const error_function = require('../utils/response-handler').error_function ;
 const set_pass_template = require("../utils/email-templates/setPassword").resetPassword;
 const sendEmail = require ("../utils/send-email").sendEmail;
+const mongoose = require('mongoose');
+
 
 function generateRandomPassword(length) {
     let charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$";
@@ -104,7 +106,7 @@ async function getUserData(req,res){
             let response = success_function({
                 statusCode : 200,
                 data : allUsers,
-                message : "All users retrieved successfully",
+                message : "users retrieved successfully",
             });
             res.status(response.statusCode).send(response);
         }else {
@@ -126,7 +128,32 @@ async function getUserData(req,res){
     }
 } 
 
+const getSingleUserData = async (req, res) => {
+    try {
+      const userId = req.params.id;
+      console.log("userId : ",userId)
+      if (!userId || !mongoose.isValidObjectId(userId)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+      }
+  
+     
+      const user = await users.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
+
+
+
 module.exports = {
     createUser,
     getUserData,
+    getSingleUserData
 }
