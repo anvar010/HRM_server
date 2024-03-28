@@ -97,36 +97,60 @@ async function createUser (req,res) {
     }
 }
 
-async function getUserData(req,res){
+async function getUserData(req, res) {
     try {
-        let allUsers = await users.find({});
-        
+        let count = Number(await users.countDocuments());
+        console.log("Count: ", count);
+
+        const pageNumber = Number(req.query.page) || 1;
+        const pageSize = Number(req.query.pageSize) || count;
+
+        console.log("Page Number:", pageNumber);
+        console.log("Page Size:", pageSize);
+
+        let allUsers = await users
+            .find({})
+            .skip(pageSize * (pageNumber - 1))
+            .limit(pageSize);
 
         if (allUsers.length > 0) {
+            let totalCount = await users.countDocuments();
+            let totalPages = Math.ceil(totalCount / pageSize);
+
+            let data = {
+                count: totalCount,
+                totalPages: totalPages,
+                currentPage: pageNumber,
+                datas: allUsers,
+            };
+
             let response = success_function({
-                statusCode : 200,
-                data : allUsers,
-                message : "users retrieved successfully",
+                statusCode: 200,
+                data: data,
+                message: "Users retrieved successfully",
             });
+
             res.status(response.statusCode).send(response);
-        }else {
+        } else {
             let response = error_function({
-                statusCode : 404 ,
-                message : "No users found",
+                statusCode: 404,
+                message: "No users found",
             });
+
             res.status(response.statusCode).send(response);
-            return ;
         }
-    } catch(error) {
-        console.log ("error : ",error);
+    } catch (error) {
+        console.log("Error:", error);
 
         let response = error_function({
-            statusCode : 500,
-            message : "Internal server error",
+            statusCode: 500,
+            message: "Internal server error",
         });
-        res.status(response.statusCode).send(response)
+
+        res.status(response.statusCode).send(response);
     }
-} 
+}
+
 
 const getSingleUserData = async (req, res) => {
     try {
@@ -148,7 +172,8 @@ const getSingleUserData = async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   };
-  
+
+
 
 
 
